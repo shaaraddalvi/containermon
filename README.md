@@ -1,9 +1,11 @@
 # containermon
 
-Install with go:
+## Install with go
 ```
 go get -u github.com/sparrc/containermon
 ```
+
+## Running from CLI
 
 Container Name or ID is the only required argument
 ```
@@ -29,3 +31,13 @@ ts,timeElapsed,cpuTimeElapsed,percentCPUSinceStart,percentCPUThisInterval
 2020-05-04T18:21:56Z,23.27,0.93,4.00,2.08
 2020-05-04T18:22:02Z,28.40,1.08,3.79,2.86
 ```
+
+## Running as a Docker container
+
+### Build conatiner images
+`docker build -t containermon:test .`
+
+### Run container 
+`docker run -d -v /var/run/docker.sock:/var/run/docker.sock:ro -v /Users/shaarad/code/containermon:/containerlog --name mssql containermon:test /app/containermon -container clever_cohen -interval 1 -output-format csv -file /containerlog/containerlog.csv`
+
+This will output the logs at `/Users/shaarad/code/containermon/containerlog.csv`
