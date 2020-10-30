@@ -41,7 +41,7 @@ func main() {
 	previousTime = start
 	ticker := time.NewTicker(time.Duration(*interval) * time.Second)
 	if *outputFormat == "csv" {
-		fmt.Println("ts,timeElapsed,cpuTimeElapsed,percentCPUSinceStart,percentCPUThisInterval,memoryUsageKiB")
+		fmt.Println("ts,timeElapsed,cpuTimeElapsed,percentCPUSinceStart,percentCPUThisInterval,memoryUsageMiB,percentMemoryUsage")
 	}
 	for range ticker.C {
 		stats = getStats(cli)
@@ -81,26 +81,29 @@ func printStats(stats *types.StatsJSON, now time.Time, elapsed time.Duration, in
 	cpuTimeElapsed := float64(stats.CPUStats.CPUUsage.TotalUsage-startUsage) / 1000000000
 	percentCPUSinceStart := float64(stats.CPUStats.CPUUsage.TotalUsage-startUsage) / float64(elapsed.Nanoseconds()) * 100
 	percentCPUThisInterval := float64(stats.CPUStats.CPUUsage.TotalUsage-previousTotalUsage) / float64(intervalElapsed.Nanoseconds()) * 100
+	percentMemoryUsage := (float64(stats.MemoryStats.Usage) / 1024 / 1024) / (float64(stats.MemoryStats.Limit) / 1024 / 1024) * 100
 
 	if *outputFormat == "csv" {
 		// csv
-		// ts,timeElapsed,cpuTimeElapsed,percentCPUSinceStart,percentCPUThisInterval,memoryUsageKiB
-		fmt.Printf("%s,%.2f,%.2f,%.2f,%.2f,%.1f\n",
+		// ts,timeElapsed,cpuTimeElapsed,percentCPUSinceStart,percentCPUThisInterval,memoryUsageMiB,percentMemoryUsage
+		fmt.Printf("%s,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
 			ts,
 			timeElapsed,
 			cpuTimeElapsed,
 			percentCPUSinceStart,
 			percentCPUThisInterval,
-			float64(stats.MemoryStats.Usage)/1024)
+			float64(stats.MemoryStats.Usage)/1024/1024,
+			percentMemoryUsage)
 	} else {
 		// json
-		fmt.Printf(`{"ts":"%s","timeElapsed":%.2f,"cpuTimeElapsed":%.2f,"percentCPUSinceStart":%.2f,"percentCPUThisInterval":%.2f,"memoryUsageKiB":%.1f}`,
+		fmt.Printf(`{"ts":"%s","timeElapsed":%.2f,"cpuTimeElapsed":%.2f,"percentCPUSinceStart":%.2f,"percentCPUThisInterval":%.2f,"memoryUsageMiB":%.2f,"memoryUsagePercentage":%.2f}`,
 			ts,
 			timeElapsed,
 			cpuTimeElapsed,
 			percentCPUSinceStart,
 			percentCPUThisInterval,
-			float64(stats.MemoryStats.Usage)/1024)
+			float64(stats.MemoryStats.Usage)/1024/1024,
+			percentMemoryUsage)
 		fmt.Println()
 	}
 }
